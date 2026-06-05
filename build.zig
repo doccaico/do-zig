@@ -54,6 +54,13 @@ pub fn build(b: *std.Build) void {
             .{ .name = "utils", .module = utils_mod },
         },
     });
+    const delete_duplicate_path_mod = b.addModule("delete_duplicate_path", .{
+        .root_source_file = b.path("src/delete_duplicate_path.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+        },
+    });
 
     const exe = b.addExecutable(.{
         .name = "do",
@@ -67,6 +74,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "diary_search", .module = diary_search_mod },
                 .{ .name = "shitaraba", .module = shitaraba_mod },
                 .{ .name = "gitup", .module = gitup_mod },
+                .{ .name = "delete_duplicate_path", .module = delete_duplicate_path_mod },
             },
         }),
     });

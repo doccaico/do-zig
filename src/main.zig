@@ -5,6 +5,7 @@ const u = @import("utils");
 const diary_search = @import("diary_search");
 const shitaraba = @import("shitaraba");
 const gitup = @import("gitup");
+const delete_duplicate_path = @import("delete_duplicate_path");
 const process = std.process;
 const mem = std.mem;
 const os = std.os;
@@ -66,6 +67,8 @@ pub fn main(init: std.process.Init) !void {
         exit_code = try shitaraba.run(args[2..]);
     } else if (mem.eql(u8, command, "gitup")) {
         exit_code = try gitup.run(args[2..]);
+    } else if (mem.eql(u8, command, "delete_duplicate_path")) {
+        exit_code = try delete_duplicate_path.run();
     } else {
         try g.stderr.print("unknown command '{s}'\n", .{command});
         try u.eprintln(HELP_MSG);
