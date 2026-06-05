@@ -7,20 +7,19 @@ const fs = std.fs;
 const mem = std.mem;
 const process = std.process;
 
-// 各言語のアップデーターモジュール（プロジェクトの構成に合わせてインポート）
-// const golang = @import("nightup/golang");
-// const vim = @import("nightup/vim");
+// 各言語のアップデーターモジュール
 const zig = @import("zig");
 const odin = @import("odin");
 const v = @import("v");
 const go = @import("go");
+const vim = @import("vim");
 
 const HELP_MSG =
     \\Usage:
-    \\    do.exe nightup go
+    \\    do.exe nightup zig
     \\    do.exe nightup odin
     \\    do.exe nightup v
-    \\    do.exe nightup zig
+    \\    do.exe nightup go
     \\    do.exe nightup vim
 ;
 
@@ -37,7 +36,6 @@ pub fn run(args: []const [:0]const u8) !u8 {
     const target = args[0];
 
     // 1. ホームディレクトリの取得と .nightup パスの結合
-    // ※ Zig 0.16.0 では os.getenv("USERPROFILE") もしくは std.process.getEnvVarOwned を利用します
     const home_dir = g.environ_map.get("USERPROFILE") orelse {
         try u.eprintln("Impossible to get your home dir (USERPROFILE)!", .{});
         return 1;
@@ -105,8 +103,8 @@ pub fn run(args: []const [:0]const u8) !u8 {
         exit_code = try v.run(dist_dir.?, download_dir);
     } else if (mem.eql(u8, target, "go")) {
         exit_code = try go.run(dist_dir.?, download_dir);
-        // } else if (mem.eql(u8, target, "vim")) {
-        //     try vim.run();
+    } else if (mem.eql(u8, target, "vim")) {
+        exit_code = try vim.run();
     } else {
         try u.eprintln("nightup: unknown command '{s}'", .{target});
         try u.eprintln(HELP_MSG, .{});

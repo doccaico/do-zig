@@ -3,10 +3,10 @@ const c = @import("c");
 const g = @import("global");
 const u = @import("utils");
 
-const fmt = std.fmt;
-const process = std.process;
-const fs = std.fs;
 const Io = std.Io;
+const fmt = std.fmt;
+const fs = std.fs;
+const process = std.process;
 
 pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
     // 1. 最新バージョンのJSONを取得

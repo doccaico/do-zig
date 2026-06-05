@@ -9,10 +9,11 @@ const delete_duplicate_path = @import("delete_duplicate_path");
 const verse = @import("verse");
 const wiki = @import("wiki");
 const nightup = @import("nightup");
-const process = std.process;
+
+const Io = std.Io;
 const mem = std.mem;
 const os = std.os;
-const Io = std.Io;
+const process = std.process;
 
 pub extern "kernel32" fn SetConsoleOutputCP(
     wCodePageID: os.windows.UINT,
