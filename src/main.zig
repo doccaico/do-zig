@@ -7,6 +7,7 @@ const shitaraba = @import("shitaraba");
 const gitup = @import("gitup");
 const delete_duplicate_path = @import("delete_duplicate_path");
 const verse = @import("verse");
+const wiki = @import("wiki");
 const process = std.process;
 const mem = std.mem;
 const os = std.os;
@@ -72,6 +73,8 @@ pub fn main(init: process.Init) !void {
         exit_code = try delete_duplicate_path.run();
     } else if (mem.eql(u8, command, "verse")) {
         exit_code = try verse.run(args[2..]);
+    } else if (mem.eql(u8, command, "wiki")) {
+        exit_code = try wiki.run(args[2..]);
     } else {
         try g.stderr.print("unknown command '{s}'\n", .{command});
         try u.eprintln(HELP_MSG);

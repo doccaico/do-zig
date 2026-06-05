@@ -69,6 +69,13 @@ pub fn build(b: *std.Build) void {
             .{ .name = "c", .module = c_mod },
         },
     });
+    const wiki_mod = b.addModule("wiki", .{
+        .root_source_file = b.path("src/wiki.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+        },
+    });
 
     const exe = b.addExecutable(.{
         .name = "do",
@@ -84,6 +91,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "gitup", .module = gitup_mod },
                 .{ .name = "delete_duplicate_path", .module = delete_duplicate_path_mod },
                 .{ .name = "verse", .module = verse_mod },
+                .{ .name = "wiki", .module = wiki_mod },
             },
         }),
     });
