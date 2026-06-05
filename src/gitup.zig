@@ -1,13 +1,10 @@
 const std = @import("std");
 const g = @import("global");
 const u = @import("utils");
-const c = @import("c");
-const mem = std.mem;
-const fmt = std.fmt;
-const os = std.os;
-const unicode = std.unicode;
-const process = std.process;
 const Io = std.Io;
+const fmt = std.fmt;
+const mem = std.mem;
+const process = std.process;
 
 const HELP_MSG =
     \\USAGE:
@@ -92,7 +89,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
         return 0;
     }
 
-    // 変更内容を事前に少し表示（親切設計）
+    // 変更内容を事前に少し表示
     try g.stdout.print("==> Detected changes:\n", .{});
     try g.stdout.print("    {s}\n\n", .{clean_output_git_sp});
 
@@ -119,6 +116,5 @@ pub fn run(args: []const [:0]const u8) !u8 {
 
     try g.stdout.print("==> Success! All changes updated and pushed\n", .{});
 
-    try g.stdout.flush();
     return 0;
 }
