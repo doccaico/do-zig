@@ -13,6 +13,7 @@ const process = std.process;
 // const vlang = @import("nightup/vlang");
 const zig = @import("zig");
 const odin = @import("odin");
+const v = @import("v");
 
 const HELP_MSG =
     \\Usage:
@@ -104,8 +105,8 @@ pub fn run(args: []const [:0]const u8) !u8 {
         exit_code = try zig.run(dist_dir.?, download_dir);
     } else if (mem.eql(u8, target, "odin")) {
         exit_code = try odin.run(dist_dir.?, download_dir);
-        // } else if (mem.eql(u8, target, "v")) {
-        //     try v.run(dist_dir.?, download_dir);
+    } else if (mem.eql(u8, target, "v")) {
+        exit_code = try v.run(dist_dir.?, download_dir);
         // } else if (mem.eql(u8, target, "go")) {
         //     try go.run(dist_dir.?, download_dir);
         // } else if (mem.eql(u8, target, "vim")) {
