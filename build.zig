@@ -61,6 +61,14 @@ pub fn build(b: *std.Build) void {
             .{ .name = "utils", .module = utils_mod },
         },
     });
+    const verse_mod = b.addModule("verse", .{
+        .root_source_file = b.path("src/verse.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+            .{ .name = "c", .module = c_mod },
+        },
+    });
 
     const exe = b.addExecutable(.{
         .name = "do",
@@ -75,6 +83,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "shitaraba", .module = shitaraba_mod },
                 .{ .name = "gitup", .module = gitup_mod },
                 .{ .name = "delete_duplicate_path", .module = delete_duplicate_path_mod },
+                .{ .name = "verse", .module = verse_mod },
             },
         }),
     });
