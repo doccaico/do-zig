@@ -3,15 +3,15 @@ const c = @import("c");
 const g = @import("global");
 const u = @import("utils");
 
-const Io = std.Io;
 const fmt = std.fmt;
 const mem = std.mem;
 const process = std.process;
 const fs = std.fs;
+const Io = std.Io;
 
 pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
     // 1. 最新バージョンのJSONを取得
-    const url = "https://ziglang.org/download/index.json";
+    const url = "https://f001.backblazeb2.com/file/odin-binaries/nightly.json";
     const args_curl = [_][]const u8{ "curl", "-sSL", "-A", "Mozilla/5.0", url };
     var child_curl = try process.spawn(g.io, .{
         .argv = &args_curl,
@@ -30,20 +30,20 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
     const term_curl = try child_curl.wait(g.io);
 
     if (term_curl.exited != 0 or contents.len == 0) {
-        try u.eprintln("failed to download index.json", .{});
+        try u.eprintln("failed to download nightly.json", .{});
         return 1;
     }
-    try u.println("Download (index.json) is done", .{});
+    try u.println("Download (nightly.json) is done", .{});
 
-    // 2. PCRE2で master の x86_64-windows 用の URL を抽出
+    // 2. PCRE2で日付（YYYY-MM-DD）を抽出
     var re: *c.pcre2_code_8 = undefined;
     var match_data: *c.pcre2_match_data_8 = undefined;
     var errornumber: i32 = undefined;
     var erroroffset: c.PCRE2_SIZE = undefined;
 
-    // (?s) DOTALL オプション
+    // Nimの正規表現 ([\d]{4}-[\d]{2}-[\d]{2})T に適合するパターン
     const pattern =
-        \\(?s)"master":\s*\{.*?"x86_64-windows":\s*\{.*?"tarball":\s*"([^"]+)"
+        \\(\d{4}-\d{2}-\d{2})T
     ;
     const maybe_re = c.pcre2_compile_8(pattern.ptr, pattern.len, 0, &errornumber, &erroroffset, null);
     if (maybe_re == null) {
@@ -63,31 +63,33 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
 
     const rc = c.pcre2_match_8(re, contents.ptr, contents.len, 0, 0, match_data, null);
     if (rc < 0) {
-        try u.eprintln("failed to find ZIP URL for x86_64-windows master", .{});
+        try u.eprintln("failed to find ZIP URL for odin-windows-amd64 nightly", .{});
         return 1;
     }
 
     const ovector = c.pcre2_get_ovector_pointer_8(match_data);
-    // キャプチャグループ1 (URL)
-    const download_url = contents[ovector[2]..ovector[3]];
+    // キャプチャグループ1 (YYYY-MM-DD)
+    const nightly_date = contents[ovector[2]..ovector[3]];
+
+    // URLエンコードされた「+」である「%2B」を使用してURLを構築
+    const download_url = try fmt.allocPrint(g.allocator, "https://f001.backblazeb2.com/file/odin-binaries/nightly/odin-windows-amd64-nightly%2B{s}.zip", .{nightly_date});
     try u.println("Download URL: {s}", .{download_url});
 
     // 3. 作業用ディレクトリの作成
-    const work_dir_name = "zig-master-upgrade-working";
+    const work_dir_name = "odin-nightly-upgrade-working";
     const work_dir_path = try fs.path.join(g.allocator, &[_][]const u8{ download_dir, work_dir_name });
 
-    // 既存の作業ディレクトリがあれば削除
+    // 既存の作業ディレクトリがあればツリーごと削除
     Io.Dir.cwd().deleteTree(g.io, work_dir_path) catch {};
 
-    // 新規作成
+    // ネネイティブ関数による一発再帰作成
     try Io.Dir.cwd().createDirPath(g.io, work_dir_path);
     try u.println("Created working directory: '{s}'", .{work_dir_path});
 
     // 4. ZIPファイルのダウンロード
-    const local_zip = "zig-master-latest.zip";
+    const local_zip = "odin-nightly-latest.zip";
     const local_zip_path = try fs.path.join(g.allocator, &[_][]const u8{ work_dir_path, local_zip });
 
-    // `curl` を使ってパスを直接指定してファイルをダウンロードする
     const args_zip = [_][]const u8{ "curl", "-fsSL", "-A", "Mozilla/5.0", download_url, "-o", local_zip_path };
     var child_zip = try process.spawn(g.io, .{
         .argv = &args_zip,
@@ -99,10 +101,9 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
         try u.eprintln("failed to download ZIP file", .{});
         return 1;
     }
-    try u.println("Download (ZIP) is done: {s}", .{local_zip_path});
+    try u.println("Download (ZIP) is done", .{});
 
     // 5. 外部コマンド tar の実行
-    // Windowsの `tar` を叩き、作業フォルダに展開させるための引数
     const args_tar = [_][]const u8{ "tar", "-xf", local_zip_path, "-C", work_dir_path, "--strip-components=1" };
     var child_tar = try process.spawn(g.io, .{
         .argv = &args_tar,
@@ -111,24 +112,18 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
 
     if (term_tar.exited != 0) {
         Io.Dir.cwd().deleteTree(g.io, work_dir_path) catch {};
-        try u.eprintln("failed to extract ZIP file with tar", .{});
+        try u.eprintln("failed to extract ZIP with tar", .{});
         return 1;
     }
     try u.println("Extraction is done", .{});
 
     // 6. 不要になったZIPの削除
-    Io.Dir.cwd().deleteFile(g.io, local_zip_path) catch {
-        Io.Dir.cwd().deleteTree(g.io, work_dir_path) catch {};
-        return 1;
-    };
+    try Io.Dir.cwd().deleteFile(g.io, local_zip_path);
     try u.println("Removed: '{s}'", .{local_zip_path});
 
     // 7. 配置（アップデートの適用）
     // 既存のインストール先（dist_dir）をツリーごと一発で削除
-    Io.Dir.cwd().deleteTree(g.io, dist_dir) catch {
-        Io.Dir.cwd().deleteTree(g.io, work_dir_path) catch {};
-        return 1;
-    };
+    try Io.Dir.cwd().deleteTree(g.io, dist_dir);
     try u.println("Removed: '{s}'", .{dist_dir});
 
     // ワークスペースを作業パスから dist_dir へ移動

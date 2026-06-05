@@ -9,10 +9,10 @@ const process = std.process;
 
 // 各言語のアップデーターモジュール（プロジェクトの構成に合わせてインポート）
 // const golang = @import("nightup/golang");
-// const odinlang = @import("nightup/odinlang");
 // const vim = @import("nightup/vim");
 // const vlang = @import("nightup/vlang");
 const zig = @import("zig");
+const odin = @import("odin");
 
 const HELP_MSG =
     \\Usage:
@@ -102,12 +102,12 @@ pub fn run(args: []const [:0]const u8) !u8 {
     var exit_code: u8 = 0;
     if (mem.eql(u8, target, "zig")) {
         exit_code = try zig.run(dist_dir.?, download_dir);
-        // } else if (mem.eql(u8, target, "odin")) {
-        //     try odinlang.run(dist_dir.?, download_dir);
+    } else if (mem.eql(u8, target, "odin")) {
+        exit_code = try odin.run(dist_dir.?, download_dir);
         // } else if (mem.eql(u8, target, "v")) {
-        //     try vlang.run(dist_dir.?, download_dir);
+        //     try v.run(dist_dir.?, download_dir);
         // } else if (mem.eql(u8, target, "go")) {
-        //     try golang.run(dist_dir.?, download_dir);
+        //     try go.run(dist_dir.?, download_dir);
         // } else if (mem.eql(u8, target, "vim")) {
         //     try vim.run();
     } else {
