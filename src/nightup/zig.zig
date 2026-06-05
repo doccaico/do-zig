@@ -4,8 +4,6 @@ const g = @import("global");
 const u = @import("utils");
 
 const Io = std.Io;
-const fmt = std.fmt;
-const mem = std.mem;
 const process = std.process;
 const fs = std.fs;
 

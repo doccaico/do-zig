@@ -10,10 +10,10 @@ const process = std.process;
 // 各言語のアップデーターモジュール（プロジェクトの構成に合わせてインポート）
 // const golang = @import("nightup/golang");
 // const vim = @import("nightup/vim");
-// const vlang = @import("nightup/vlang");
 const zig = @import("zig");
 const odin = @import("odin");
 const v = @import("v");
+const go = @import("go");
 
 const HELP_MSG =
     \\Usage:
@@ -92,10 +92,6 @@ pub fn run(args: []const [:0]const u8) !u8 {
         return 1;
     }
 
-    // if (!mem.eql(u8, target, "vim")) {
-    //     std.debug.print("{s}\n", .{dist_dir.?});
-    // }
-
     // 4. 一時保存ディレクトリの設定 (TEMP環境変数から取得)
     const download_dir = g.environ_map.get("TEMP") orelse ".";
 
@@ -107,8 +103,8 @@ pub fn run(args: []const [:0]const u8) !u8 {
         exit_code = try odin.run(dist_dir.?, download_dir);
     } else if (mem.eql(u8, target, "v")) {
         exit_code = try v.run(dist_dir.?, download_dir);
-        // } else if (mem.eql(u8, target, "go")) {
-        //     try go.run(dist_dir.?, download_dir);
+    } else if (mem.eql(u8, target, "go")) {
+        exit_code = try go.run(dist_dir.?, download_dir);
         // } else if (mem.eql(u8, target, "vim")) {
         //     try vim.run();
     } else {

@@ -3,13 +3,14 @@ const c = @import("c");
 const g = @import("global");
 const u = @import("utils");
 
+const fmt = std.fmt;
 const process = std.process;
 const fs = std.fs;
 const Io = std.Io;
 
 pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
     // 1. 最新バージョンのJSONを取得
-    const url = "https://api.github.com/repos/vlang/v/releases/latest";
+    const url = "https://go.dev/dl/?mode=json";
     const args_curl = [_][]const u8{ "curl", "-sSL", "-A", "Mozilla/5.0", url };
     var child_curl = try process.spawn(g.io, .{
         .argv = &args_curl,
@@ -33,15 +34,14 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
     }
     try u.println("Download (json) is done", .{});
 
-    // 2. 正規表現で Windows 用の ZIP ファイルのブラウザダウンロード URL を抽出
+    // 2. 正規表現で Windows 用の ZIP ファイル名を抽出
     var re: *c.pcre2_code_8 = undefined;
     var match_data: *c.pcre2_match_data_8 = undefined;
     var errornumber: i32 = undefined;
     var erroroffset: c.PCRE2_SIZE = undefined;
 
-    // Nimの正規表現 browser_download_url":\s*"(https://[^"]+v_windows\.zip) に適合するパターン
     const pattern =
-        \\browser_download_url":\s*"(https://[^"]+v_windows\.zip)
+        \\filename":\s*"(go[0-9.]+\.windows-amd64\.zip)
     ;
     const maybe_re = c.pcre2_compile_8(pattern.ptr, pattern.len, 0, &errornumber, &erroroffset, null);
     if (maybe_re == null) {
@@ -61,17 +61,19 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
 
     const rc = c.pcre2_match_8(re, contents.ptr, contents.len, 0, 0, match_data, null);
     if (rc < 0) {
-        try u.eprintln("failed to find ZIP URL for v-windows", .{});
+        try u.eprintln("failed to find ZIP URL for go-windows-amd64", .{});
         return 1;
     }
 
     const ovector = c.pcre2_get_ovector_pointer_8(match_data);
-    // キャプチャグループ1 (URL部分)
-    const download_url = contents[ovector[2]..ovector[3]];
+    // キャプチャグループ1 (ファイル名部分)
+    const filename = contents[ovector[2]..ovector[3]];
+
+    const download_url = try fmt.allocPrint(g.allocator, "https://go.dev/dl/{s}", .{filename});
     try u.println("Download URL: {s}", .{download_url});
 
     // 3. 作業用ディレクトリの作成
-    const work_dir_name = "v-latest-upgrade-working";
+    const work_dir_name = "go-latest-upgrade-working";
     const work_dir_path = try fs.path.join(g.allocator, &[_][]const u8{ download_dir, work_dir_name });
 
     // 既存の作業ディレクトリがあればツリーごと一括削除
@@ -82,7 +84,7 @@ pub fn run(dist_dir: []const u8, download_dir: []const u8) !u8 {
     try u.println("Created working directory: '{s}'", .{work_dir_path});
 
     // 4. ZIPファイルのダウンロード
-    const local_zip = "v-latest.zip";
+    const local_zip = "go-latest.zip";
     const local_zip_path = try fs.path.join(g.allocator, &[_][]const u8{ work_dir_path, local_zip });
 
     const args_zip = [_][]const u8{ "curl", "-fsSL", "-A", "Mozilla/5.0", download_url, "-o", local_zip_path };

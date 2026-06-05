@@ -101,6 +101,14 @@ pub fn build(b: *std.Build) void {
             .{ .name = "c", .module = c_mod },
         },
     });
+    const nightup_go_mod = b.addModule("go", .{
+        .root_source_file = b.path("src/nightup/go.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+            .{ .name = "c", .module = c_mod },
+        },
+    });
     const nightup_mod = b.addModule("nightup", .{
         .root_source_file = b.path("src/nightup.zig"),
         .imports = &.{
@@ -109,6 +117,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "zig", .module = nightup_zig_mod },
             .{ .name = "odin", .module = nightup_odin_mod },
             .{ .name = "v", .module = nightup_v_mod },
+            .{ .name = "go", .module = nightup_go_mod },
         },
     });
 
