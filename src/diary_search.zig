@@ -18,11 +18,11 @@ const HELP_MSG =
 
 pub fn run(args: []const [:0]const u8) !u8 {
     if (args.len == 1 and (mem.eql(u8, args[0], "-h") or mem.eql(u8, args[0], "--help"))) {
-        try u.println(HELP_MSG);
+        try u.println(HELP_MSG, .{});
         return 0;
     }
     if (args.len != 1) {
-        try u.eprintln(HELP_MSG);
+        try u.eprintln(HELP_MSG, .{});
         return 1;
     }
 
@@ -32,7 +32,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
             try Io.Dir.accessAbsolute(g.io, raw_path, .{});
             path = raw_path;
         } else {
-            try u.eprintln("not found 'DIARY_DIR' in env variable");
+            try u.eprintln("not found 'DIARY_DIR' in env variable", .{});
             return 1;
         }
         break :blk path;
@@ -61,12 +61,10 @@ pub fn run(args: []const [:0]const u8) !u8 {
 
     if (term_rg.exited != 0) {
         if (term_rg.exited == 1) {
-            const msg = try fmt.allocPrint(g.allocator, "No matches found for '{s}'", .{keyword});
-            try u.println(msg);
+            try u.println("No matches found for '{s}'", .{keyword});
             return 0;
         } else {
-            const msg = try fmt.allocPrint(g.allocator, "'rg' failed with exit code '{d}'", .{term_rg.exited});
-            try u.eprintln(msg);
+            try u.eprintln("'rg' failed with exit code '{d}'", .{term_rg.exited});
             return 1;
         }
     }
@@ -86,8 +84,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     try Io.Dir.deleteFileAbsolute(g.io, tmp_file_abs);
 
     if (term_less.exited != 0) {
-        const msg = try fmt.allocPrint(g.allocator, "'less' failed with exit code '{d}'", .{term_less.exited});
-        try u.eprintln(msg);
+        try u.eprintln("'less' failed with exit code '{d}'", .{term_less.exited});
         return 1;
     }
 

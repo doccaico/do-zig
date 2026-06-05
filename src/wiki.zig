@@ -27,11 +27,11 @@ const WikiResponse = struct {
 
 pub fn run(args: []const [:0]const u8) !u8 {
     if (args.len == 1 and (mem.eql(u8, args[0], "-h") or mem.eql(u8, args[0], "--help"))) {
-        try u.println(HELP_MSG);
+        try u.println(HELP_MSG, .{});
         return 0;
     }
     if (args.len != 1) {
-        try u.eprintln(HELP_MSG);
+        try u.eprintln(HELP_MSG, .{});
         return 1;
     }
 
@@ -64,14 +64,14 @@ pub fn run(args: []const [:0]const u8) !u8 {
     const term_curl = try child_curl.wait(g.io);
 
     if (term_curl.exited != 0 or json_content.len == 0) {
-        try u.eprintln("failed to fetch Wikipedia JSON");
+        try u.eprintln("failed to fetch Wikipedia JSON", .{});
         return 1;
     }
 
     const parsed = json.parseFromSlice(WikiResponse, g.allocator, json_content, .{
         .ignore_unknown_fields = true,
     }) catch {
-        try u.eprintln("failed to parse JSON structure");
+        try u.eprintln("failed to parse JSON structure", .{});
         return 1;
     };
 
@@ -89,7 +89,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     }
 
     if (sb.written().len == 0) {
-        try u.eprintln("no articles found");
+        try u.eprintln("no articles found", .{});
         return 1;
     }
 
@@ -108,8 +108,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     try Io.Dir.deleteFileAbsolute(g.io, tmp_file_abs);
 
     if (term_less.exited != 0) {
-        const msg = try fmt.allocPrint(g.allocator, "'less' failed with exit code '{d}'", .{term_less.exited});
-        try u.eprintln(msg);
+        try u.eprintln("'less' failed with exit code '{d}'", .{term_less.exited});
         return 1;
     }
 

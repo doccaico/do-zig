@@ -29,11 +29,11 @@ fn execCmd(args: []const []const u8) !u8 {
 
 pub fn run(args: []const [:0]const u8) !u8 {
     if (args.len == 0 or args.len > 2) {
-        try u.eprintln(HELP_MSG);
+        try u.eprintln(HELP_MSG, .{});
         return 1;
     }
     if (mem.eql(u8, args[0], "-h") or mem.eql(u8, args[0], "--help")) {
-        try u.println(HELP_MSG);
+        try u.println(HELP_MSG, .{});
         return 0;
     }
 
@@ -42,8 +42,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
 
     if (args.len == 2) {
         Io.Dir.accessAbsolute(g.io, args[0], .{}) catch |err| {
-            const msg = try fmt.allocPrint(g.allocator, "failed to Io.Dir.accessAbsolute: '{s}' {any}", .{ args[0], err });
-            try u.eprintln(msg);
+            try u.eprintln("failed to Io.Dir.accessAbsolute: '{s}' {any}", .{ args[0], err });
             return 1;
         };
         dir_path = args[0];
@@ -79,13 +78,13 @@ pub fn run(args: []const [:0]const u8) !u8 {
     const term_git_sp = try child_git_sp.wait(g.io);
 
     if (term_git_sp.exited != 0) {
-        try u.eprintln("not a git repository (or git command failed)");
+        try u.eprintln("not a git repository (or git command failed)", .{});
         return 1;
     }
 
     const clean_output_git_sp = mem.trim(u8, output_git_sp, " \n");
     if (clean_output_git_sp.len == 0) {
-        try u.println("There is no need to update");
+        try u.println("There is no need to update", .{});
         return 0;
     }
 
@@ -96,25 +95,25 @@ pub fn run(args: []const [:0]const u8) !u8 {
     // gitを起動する (add .)
     try g.stdout.print("==> Running: git add .\n", .{});
     if (try execCmd(&[_][]const u8{ "git", "add", "." }) != 0) {
-        try u.eprintln("failed to run 'git add'");
+        try u.eprintln("failed to run 'git add'", .{});
         return 1;
     }
 
     // gitを起動する (commit -m "...")
     try g.stdout.print("==> Running: git commit -m \"{s}\"\n", .{commit_msg});
     if (try execCmd(&[_][]const u8{ "git", "commit", "-m", commit_msg }) != 0) {
-        try u.eprintln("failed to run 'git commit'");
+        try u.eprintln("failed to run 'git commit'", .{});
         return 1;
     }
 
     // gitを起動する (push)
     try g.stdout.print("==> Running: git push\n", .{});
     if (try execCmd(&[_][]const u8{ "git", "push" }) != 0) {
-        try u.eprintln("failed to run 'git push'");
+        try u.eprintln("failed to run 'git push'", .{});
         return 1;
     }
 
-    try g.stdout.print("==> Success! All changes updated and pushed\n", .{});
+    try u.println("==> Success! All changes updated and pushed\n", .{});
 
     return 0;
 }

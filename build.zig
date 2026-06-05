@@ -76,6 +76,23 @@ pub fn build(b: *std.Build) void {
             .{ .name = "utils", .module = utils_mod },
         },
     });
+    // nightup
+    const nightup_zig_mod = b.addModule("zig", .{
+        .root_source_file = b.path("src/nightup/zig.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+            .{ .name = "c", .module = c_mod },
+        },
+    });
+    const nightup_mod = b.addModule("nightup", .{
+        .root_source_file = b.path("src/nightup.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+            .{ .name = "zig", .module = nightup_zig_mod },
+        },
+    });
 
     const exe = b.addExecutable(.{
         .name = "do",
@@ -92,6 +109,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "delete_duplicate_path", .module = delete_duplicate_path_mod },
                 .{ .name = "verse", .module = verse_mod },
                 .{ .name = "wiki", .module = wiki_mod },
+                .{ .name = "nightup", .module = nightup_mod },
             },
         }),
     });

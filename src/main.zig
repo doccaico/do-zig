@@ -8,6 +8,7 @@ const gitup = @import("gitup");
 const delete_duplicate_path = @import("delete_duplicate_path");
 const verse = @import("verse");
 const wiki = @import("wiki");
+const nightup = @import("nightup");
 const process = std.process;
 const mem = std.mem;
 const os = std.os;
@@ -52,11 +53,11 @@ pub fn main(init: process.Init) !void {
     const args = try init.minimal.args.toSlice(g.allocator);
 
     if (args.len == 1) {
-        try u.eprintln(HELP_MSG);
+        try u.eprintln(HELP_MSG, .{});
         process.exit(1);
     }
     if (mem.eql(u8, args[1], "-h") or mem.eql(u8, args[1], "--help")) {
-        try u.println(HELP_MSG);
+        try u.println(HELP_MSG, .{});
         process.exit(0);
     }
 
@@ -75,14 +76,16 @@ pub fn main(init: process.Init) !void {
         exit_code = try verse.run(args[2..]);
     } else if (mem.eql(u8, command, "wiki")) {
         exit_code = try wiki.run(args[2..]);
+    } else if (mem.eql(u8, command, "nightup")) {
+        exit_code = try nightup.run(args[2..]);
     } else {
         try g.stderr.print("unknown command '{s}'\n", .{command});
-        try u.eprintln(HELP_MSG);
+        try u.eprintln(HELP_MSG, .{});
         exit_code = 1;
     }
 
-    try g.stdout.flush();
-    try g.stderr.flush();
+    // try g.stdout.flush();
+    // try g.stderr.flush();
 
     process.exit(exit_code);
 }

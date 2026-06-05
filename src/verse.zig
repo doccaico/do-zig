@@ -104,11 +104,11 @@ const HELP_MSG =
 
 pub fn run(args: []const [:0]const u8) !u8 {
     if (args.len == 1 and (mem.eql(u8, args[0], "-h") or mem.eql(u8, args[0], "--help"))) {
-        try u.println(HELP_MSG);
+        try u.println(HELP_MSG, .{});
         return 0;
     }
     if (args.len != 2) {
-        try u.eprintln(HELP_MSG);
+        try u.eprintln(HELP_MSG, .{});
         return 1;
     }
 
@@ -137,8 +137,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     const term_curl = try child_curl.wait(g.io);
 
     if (term_curl.exited != 0) {
-        const msg = try fmt.allocPrint(g.allocator, "'curl' failed with exit code '{d}'", .{term_curl.exited});
-        try u.eprintln(msg);
+        try u.eprintln("'curl' failed with exit code '{d}'", .{term_curl.exited});
         return 1;
     }
 
@@ -159,7 +158,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     // 1. Compile the regular expression
     const maybe_re = c.pcre2_compile_8(pattern.ptr, pattern.len, 0, &errornumber, &erroroffset, null);
     if (maybe_re == null) {
-        try u.eprintln("Regex's compilation failed");
+        try u.eprintln("Regex's compilation failed", .{});
         return 1;
     } else {
         re = maybe_re.?;
@@ -169,7 +168,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     // 2. Create match data context
     const maybe_match_data = c.pcre2_match_data_create_from_pattern_8(re, null);
     if (maybe_match_data == null) {
-        try u.eprintln("Create match_data failed");
+        try u.eprintln("Create match_data failed", .{});
         return 1;
     } else {
         match_data = maybe_match_data.?;
@@ -186,8 +185,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
         // マッチしなかった、またはエラーの場合はループを抜ける
         if (rc < 0) {
             if (rc != c.PCRE2_ERROR_NOMATCH) {
-                const msg = try fmt.allocPrint(g.allocator, "Matching error: {d}", .{rc});
-                try u.eprintln(msg);
+                try u.eprintln("Matching error: {d}", .{rc});
                 return 1;
             }
             break;
@@ -235,8 +233,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     try Io.Dir.deleteFileAbsolute(g.io, tmp_file_abs);
 
     if (term_less.exited != 0) {
-        const msg = try fmt.allocPrint(g.allocator, "'less' failed with exit code '{d}'", .{term_less.exited});
-        try u.eprintln(msg);
+        try u.eprintln("'less' failed with exit code '{d}'", .{term_less.exited});
         return 1;
     }
 

@@ -6,7 +6,7 @@ const mem = std.mem;
 pub fn run() !u8 {
     // 1. 環境変数 PATH の取得
     const env_path = g.environ_map.get("PATH") orelse {
-        try u.eprintln("not found 'PATH' in env variable");
+        try u.eprintln("not found 'PATH' in env variable", .{});
         return 1;
     };
 

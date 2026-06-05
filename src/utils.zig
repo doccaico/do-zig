@@ -14,22 +14,32 @@ pub const White = "\x1b[37m";
 
 // pub const PCRE2_ZERO_TERMINATED = ~@as(c.PCRE2_SIZE, 0);
 
-pub fn println(msg: []const u8) !void {
-    try g.stdout.print("{s}\n", .{msg});
+pub fn println(comptime fmt: []const u8, args: anytype) !void {
+    try g.stdout.print(fmt, args);
+    try g.stdout.writeByte('\n');
     try g.stdout.flush();
 }
 
-pub fn eprintln(msg: []const u8) !void {
-    try g.stderr.print("{s}\n", .{msg});
+pub fn eprintln(comptime fmt: []const u8, args: anytype) !void {
+    try g.stderr.print(fmt, args);
+    try g.stderr.writeByte('\n');
     try g.stderr.flush();
 }
+
+// pub fn println(msg: []const u8) !void {
+//     try g.stdout.print("{s}\n", .{msg});
+// }
+//
+// pub fn eprintln(msg: []const u8) !void {
+//     try g.stderr.print("{s}\n", .{msg});
+// }
 
 pub fn writeTempFile(filename: []const u8, contents: []const u8) ![]const u8 {
     var path: []const u8 = undefined;
     if (g.environ_map.get("TEMP")) |raw_path| {
         path = raw_path;
     } else {
-        try eprintln("not found 'TEMP' in env variable");
+        try eprintln("not found 'TEMP' in env variable", .{});
         return error.EnvTempNotFound;
     }
 
