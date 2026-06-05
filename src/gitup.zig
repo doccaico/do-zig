@@ -20,23 +20,12 @@ const HELP_MSG =
 fn execCmd(args: []const []const u8) !u8 {
     var child = try process.spawn(g.io, .{
         .argv = args,
-        .stdout = .pipe,
     });
 
-    var stdout_buf: [1024]u8 = undefined;
-    const output = blk: {
-        if (child.stdout) |stdout| {
-            var r = stdout.reader(g.io, &stdout_buf);
-            const ret_buf = try r.interface.allocRemaining(g.allocator, .unlimited);
-            break :blk ret_buf;
-        } else {
-            break :blk "";
-        }
-    };
-
-    try g.stdout.print("{s}\n", .{output});
-
     const term = try child.wait(g.io);
+
+    try g.stdout.flush();
+    try g.stderr.flush();
 
     return term.exited;
 }
