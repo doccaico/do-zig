@@ -2,10 +2,8 @@ const std = @import("std");
 const g = @import("global");
 const u = @import("utils");
 const Io = std.Io;
-const fmt = std.fmt;
 const fs = std.fs;
 const mem = std.mem;
-const process = std.process;
 
 // 各言語のアップデーターモジュール
 const zig = @import("zig");
