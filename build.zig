@@ -4,6 +4,10 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const single_threaded: bool = if (optimize == .ReleaseSmall) true else false;
+    const strip: bool = if (optimize == .ReleaseSmall) true else false;
+    const unwind_tables: ?std.builtin.UnwindTables = if (optimize == .ReleaseSmall) .none else null;
+
     const pcre2_dep = b.dependency("pcre2", .{
         .target = target,
         .optimize = optimize,
@@ -136,6 +140,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
+            .strip = strip,
+            .single_threaded = single_threaded,
+            .unwind_tables = unwind_tables,
             .imports = &.{
                 .{ .name = "global", .module = global_mod },
                 .{ .name = "utils", .module = utils_mod },
