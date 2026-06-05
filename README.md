@@ -1,5 +1,9 @@
 ### Do (Windows only .-.)
 
+### Zig Version
+```sh
+0.16.0
+```
 ### Required Softwares
 - busybox64u (iconv)
 - curl
