@@ -47,6 +47,13 @@ pub fn build(b: *std.Build) void {
             .{ .name = "c", .module = c_mod },
         },
     });
+    const gitup_mod = b.addModule("gitup", .{
+        .root_source_file = b.path("src/gitup.zig"),
+        .imports = &.{
+            .{ .name = "global", .module = global_mod },
+            .{ .name = "utils", .module = utils_mod },
+        },
+    });
 
     const exe = b.addExecutable(.{
         .name = "do",
@@ -59,6 +66,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "utils", .module = utils_mod },
                 .{ .name = "diary_search", .module = diary_search_mod },
                 .{ .name = "shitaraba", .module = shitaraba_mod },
+                .{ .name = "gitup", .module = gitup_mod },
             },
         }),
     });

@@ -4,6 +4,7 @@ const g = @import("global");
 const u = @import("utils");
 const diary_search = @import("diary_search");
 const shitaraba = @import("shitaraba");
+const gitup = @import("gitup");
 const process = std.process;
 const mem = std.mem;
 const os = std.os;
@@ -63,6 +64,8 @@ pub fn main(init: std.process.Init) !void {
         exit_code = try diary_search.run(args[2..]);
     } else if (mem.eql(u8, command, "shitaraba")) {
         exit_code = try shitaraba.run(args[2..]);
+    } else if (mem.eql(u8, command, "gitup")) {
+        exit_code = try gitup.run(args[2..]);
     } else {
         try g.stderr.print("unknown command '{s}'\n", .{command});
         try u.eprintln(HELP_MSG);
