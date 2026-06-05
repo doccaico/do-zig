@@ -71,6 +71,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
         }
     }
 
+    // 一時ファイルに書き込む
     const tmp_filename = try fmt.allocPrint(g.allocator, "zig_diary_search_result_{d}.txt", .{os.windows.GetCurrentProcessId()});
     const tmp_file_abs = try u.writeTempFile(tmp_filename, output_rg);
 
@@ -81,6 +82,7 @@ pub fn run(args: []const [:0]const u8) !u8 {
     });
     const term_less = try child_less.wait(g.io);
 
+    // 一時ファイルを削除する
     try Io.Dir.deleteFileAbsolute(g.io, tmp_file_abs);
 
     if (term_less.exited != 0) {
