@@ -72,5 +72,8 @@ pub fn main(init: std.process.Init) !void {
         exit_code = 1;
     }
 
+    try g.stdout.flush();
+    try g.stderr.flush();
+
     process.exit(exit_code);
 }
